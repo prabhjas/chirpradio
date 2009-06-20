@@ -1,0 +1,54 @@
+{% extends "common/base.html" %}
+
+{% block content %}
+Landing page for DJDB app
+
+<h2>Search the Database</h2>
+<form action="" method="post">
+<input type="text" name="query">
+<input type="submit" value="Search">
+</form>
+</p>
+
+{% if query_str %}
+<p>Query was "{{ query_str }}".
+{% if invalid_query %}<br><b>Invalid Query!</b>{% endif %}
+</p>
+
+<h3>Artists</h3>
+<i>{{ query_results.Artist|length }} matching artists</i><br>
+{% if query_results.Artist %}
+<table>
+{% for artist in query_results.Artist %}
+<tr><td>{{ artist.name }}</td></tr>
+{% endfor %}
+</table>
+{% endif %}
+
+<h3>Albums</h3>
+<i>{{ query_results.Album|length }} matching albums</i><br>
+{% if query_results.Album %}
+<table>
+{% for album in query_results.Album %}
+<tr><td>{{ album.artist_name }}</td><td>{{ album.title }}</td>
+{% endfor %}
+</table>
+{% endif %}
+
+<h3>Tracks</h3>
+<i>{{ query_results.Track|length }} matching tracks</i>
+{% if query_results.Track %}
+<table>
+{% for track in query_results.Track %}
+<tr>
+<td>{{ track.title }}</td>
+<td>{{ track.artist_name }}</td>
+<td>{{ track.album.title }}</td>
+{% endfor %}
+</table>
+{% endif %}
+
+{% endif %}
+
+
+{% endblock %}
