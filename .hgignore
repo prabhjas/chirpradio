@@ -1,0 +1,9 @@
+# Files to ignore
+syntax: glob
+
+index.yaml
+*~
+*.pyc
+#*#
+.svn
+
