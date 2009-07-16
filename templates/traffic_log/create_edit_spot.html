@@ -1,0 +1,25 @@
+{% extends 'traffic_log/base_spots.html' %}
+{% load trafficlog_filters %}
+
+{% block topbar %}n
+{{block.super}} . Create/Edit Spot
+{% endblock %}
+
+{% block contents %}
+<p/>
+<table border="1" cellpadding="5" cellspacing="0">
+<form action="{{ formaction }}" method="post">
+{{ spot.as_table }}
+<tr><td>*</td><td>
+{% if edit %}
+{% include 'traffic_log/constraint_list_table.html'%}
+{% endif %}
+{% include 'traffic_log/spot_constraint_form.html' %}
+</td></tr>
+<tr><td colspan="2" align="center"><input type="submit" name="Save Spot" value="Save Spot"/></td></tr>
+</table>
+</form>
+{% endblock %}
+
+
+
