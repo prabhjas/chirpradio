@@ -1,0 +1,52 @@
+{% extends 'traffic_log/base.html' %}
+
+{% block extrahead_for_page %}
+<link rel="stylesheet" type="text/css" href="/media/common/js/jquery-facebox/facebox.css" media="screen" />
+<script type="text/javascript" src="/media/common/js/jquery-facebox/facebox.js"></script>
+<link rel="stylesheet" type="text/css" href="/media/traffic_log/css/trafficlog.css" media="screen" />
+<script type="text/javascript" src="/media/traffic_log/js/trafficlog.js"></script>
+{% endblock %}
+
+{% block title %}
+Traffic Log Spots
+{% endblock %}
+
+
+{% block nav %}
+{{ block.super }}
+<br/>
+
+<input id="refresh-button" type="button" value="Refresh time slots" />
+
+{% endblock %}
+{% block contents %}
+<p/>
+
+<table>
+<tr>
+    <th>Time slot</th>
+    <th>Spot</th>
+    <th>Actions</th>
+</tr>
+{% for slotted_spot in slotted_spots %}
+<tr>
+    <td><b>{{ slotted_spot.readable_slot_time }}</b></td>
+    {# hmmm, I think there won't ever be multiple spots even though this is a list (kumar) #}
+    {% for spot in slotted_spot.iter_spots  %}
+    
+    <td>{{ spot.title }}</td>
+    <td>
+        <input class="show-text-for-reading" id="spot-read__{{ spot.key }}" type="button" 
+            value="Show text for reading" /> 
+        <input class="done-with-spot-from-main-view" id="spot-done__{{ spot.key }}" type="button" 
+            value="Done" />
+    </td>
+    
+    {% endfor %}
+</tr>
+
+{# <input type="checkbox" name="readtime" value="readtime" /> #}
+{# Hour:Slot #}
+    
+{% endfor %}
+{% endblock %}
