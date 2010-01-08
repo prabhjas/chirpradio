@@ -1,0 +1,29 @@
+application: chirpradio
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+
+# Support for remote datastore access.  For more information, please see
+# http://code.google.com/appengine/articles/remote_api.html
+- url: /remote_api
+  script: $PYTHON_LIB/google/appengine/ext/remote_api/handler.py
+  login: admin
+
+# Serve static media with a 2 hour TTL.  Note that everything under
+# media is world-readable!
+- url: /media
+  static_dir: media
+  expiration: 2h
+
+# restrict public access to production url with login: admin option
+- url: /playlists/task.*
+  script: playlists/tasks.py
+  # comment if in dev mode
+  #login: admin
+
+# For everything else, we always want to use HTTPS.
+- url: /.*
+  secure: always
+  script: main.py
