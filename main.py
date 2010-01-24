@@ -37,7 +37,15 @@ from google.appengine.ext.webapp import util
 # Import the part of Django that we use here.
 import django.core.handlers.wsgi
 
+path_backup = sys.path[:]
+
 def main():
+  # Kumar: workaround Django (or...?) catching exceptions 
+  # which results in partially loaded modules.
+  # See: http://code.google.com/p/chirpradio/issues/detail?id=89&q=resolver404
+  # Note: this code is based off of similar code from app-engine-patch
+  sys.path = path_backup[:]
+
   # Ensure the Django zipfile is in the path if required.
   if have_django_zip and django_zip_path not in sys.path:
     sys.path.insert(1, django_zip_path)
@@ -55,7 +63,6 @@ def main():
 
   # Run the WSGI CGI handler with that application.
   util.run_wsgi_app(application)
-
 
 if __name__ == '__main__':
   main()
