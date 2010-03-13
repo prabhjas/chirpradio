@@ -17,6 +17,7 @@
 
 import random
 import datetime
+import logging
 
 from google.appengine.ext import db, search
 from django.core.urlresolvers import reverse
@@ -25,6 +26,8 @@ from auth.models import User
 from traffic_log import constants
 from common.autoretry import AutoRetry
 from common import time_util
+
+log = logging.getLogger()
 
 class SpotAtConstraint(object):
     """A spot within its constraint."""
@@ -51,6 +54,10 @@ class SpotConstraint(db.Model):
     
     def iter_spots(self):
         for spot in AutoRetry(Spot).get(self.spots):
+            if spot is None:
+                # there was a bug where deleted spots had lingering constraints.
+                # See http://code.google.com/p/chirpradio/issues/detail?id=103
+                continue
             yield spot
     
     def iter_spots_at_constraint(self):
@@ -92,6 +99,7 @@ class SpotConstraint(db.Model):
 class Spot(db.Model):
     """
     """
+    active    = db.BooleanProperty(default=True)
     title     = db.StringProperty(verbose_name="Spot Title", required=True)
     type      = db.StringProperty(verbose_name="Spot Type", required=True, choices=constants.SPOT_TYPE)
     created   = db.DateTimeProperty(auto_now_add=True)

@@ -48,6 +48,7 @@ def start_server(root_path=ROOT_PATH, port=PORT, app_id=APP_ID):
                            login_url=LOGIN_URL,
                            datastore_path='/dev/null',
                            history_path='/dev/null',
+                           blobstore_path='/dev/null',
                            clear_datastore=False)
   server = dev_appserver.CreateServer(ROOT_PATH,
                                       LOGIN_URL,
@@ -160,18 +161,18 @@ class AppEngineClient(client.Client):
     super(AppEngineClient, self).__init__(*args, **kw)
     self.handler = AppEngineClientHandler(port=port)
 
-# TODO(kumar) this was failing
-# See http://code.google.com/p/google-app-engine-django/issues/detail?id=154
-    
-# class IntegrationTest(test.TestCase):
-#   """Tests that we can make a request."""
-# 
-#   def setUp(self):
-#     port = start_server()
-#     self.gae_client = AppEngineClient(port=port)
-# 
-# 
-#   def testBasic(self):
-#     """a request to the default page works in the dev_appserver"""
-#     rv = self.gae_client.get('/')
-#     self.assertEquals(rv.status_code, 200)
+
+class IntegrationTest(test.TestCase):
+  """Tests that we can make a request."""
+
+  def setUp(self):
+    port = start_server()
+    self.gae_client = AppEngineClient(port=port)
+
+
+  def testBasic(self):
+    """a request to the default page works in the dev_appserver"""
+    rv = self.gae_client.get('/')
+    assert rv.status_code not in (500,404), (
+      "Unexpected status code: %s; body excerpt: %s..." % (rv.status_code, rv.content[0:140] or "<empty>")
+    )

@@ -190,6 +190,7 @@ def createSpot(request):
 def createEditSpotCopy(request, spot_copy_key=None, spot_key=None):
     if spot_copy_key:
         spot_copy = AutoRetry(models.SpotCopy).get(spot_copy_key)
+        spot_key = spot_copy.spot.key() # so that dropdown box is selected when editing
         formaction = reverse('traffic_log.editSpotCopy', args=(spot_copy_key,))
     else:
         if spot_key:
@@ -263,8 +264,19 @@ def editSpot(request, spot_key=None):
 
 @require_role(TRAFFIC_LOG_ADMIN)
 def deleteSpot(request, spot_key=None):
-    o = AutoRetry(models.Spot).get(spot_key)
-    AutoRetry(o).delete()
+    spot = AutoRetry(models.Spot).get(spot_key)
+    spot.active = False
+    AutoRetry(spot).save()
+    
+    # remove the spot from its constraints:
+    for constraint in AutoRetry(models.SpotConstraint.all().filter("spots IN", [spot.key()])):
+        active_spots = []
+        for spot_key in constraint.spots:
+            if spot_key != spot.key():
+                active_spots.append(spot_key)
+        constraint.spots = active_spots
+        AutoRetry(constraint).save()
+        
     return HttpResponseRedirect('/traffic_log/spot')
 
 
@@ -282,7 +294,12 @@ def spotDetail(request, spot_key=None):
 
 @require_role(DJ)
 def listSpots(request):
-    spots = AutoRetry(models.Spot.all().order('-created')).fetch(20)
+    spots = []
+    # TODO(Kumar) introduce paging?
+    for spot in AutoRetry(models.Spot.all().order('-created')).fetch(200):
+        if spot.active is False:
+            continue
+        spots.append(spot)
     return render_to_response('traffic_log/spot_list.html', 
         {'spots':spots}, 
         context_instance=RequestContext(request))
