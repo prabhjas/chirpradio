@@ -70,7 +70,15 @@ class TestAllFormats(type):
         test_func = eval("lambda self: getattr(self, \"%s\")(\"%s\")" %
                          (func_name, format))
         attrs[test_name] = test_func
-
+    
+    # ensure keys match the current app ID by populating them dynamically:
+    obj = ModelA(key_name="test")
+    obj.put()
+    pk = obj.key()
+    
+    for k, v in attrs['SERIALIZED_WITH_NON_EXISTANT_PARENT'].items():
+      attrs['SERIALIZED_WITH_NON_EXISTANT_PARENT'][k] = v % str(pk)
+      
     return super(TestAllFormats, cls).__new__(cls, name, bases, attrs)
 
 
@@ -178,18 +186,15 @@ class SerializationTest(unittest.TestCase):
       string cannot be deserialized correctly or the resulting object is not an
       instance of ModelA with a key named 'test'.
     """
-    # TODO(kumar) this was failing
-    # See http://code.google.com/p/google-app-engine-django/issues/detail?id=154
-    
-    # if format not in lookup_dict:
-    #   # Check not valid for this format.
-    #   return
-    # s = lookup_dict[format]
-    # result = list(serializers.deserialize(format, StringIO(s)))
-    # self.assertEqual(1, len(result), "expected 1 object from %s" % format)
-    # result[0].save()
-    # self.assert_(isinstance(result[0].object, ModelA))
-    # self.assertEqual("test", result[0].object.key().name())
+    if format not in lookup_dict:
+      # Check not valid for this format.
+      return
+    s = lookup_dict[format]
+    result = list(serializers.deserialize(format, StringIO(s)))
+    self.assertEqual(1, len(result), "expected 1 object from %s" % format)
+    result[0].save()
+    self.assert_(isinstance(result[0].object, ModelA))
+    self.assertEqual("test", result[0].object.key().name())
 
   # Lookup dicts for the above (doLookupDeserialisationReferenceTest) function.
   SERIALIZED_WITH_KEY_AS_LIST = {
@@ -229,22 +234,19 @@ class SerializationTest(unittest.TestCase):
       "yaml": """-\n fields: {description: null}\n model: tests.modela\n """
               """pk: test\n"""
   }
-
+    
   # Lookup dict for the function.
+  # Note that pk values are set in __new__()
   SERIALIZED_WITH_NON_EXISTANT_PARENT = {
-      "json": """[{"pk": "ahhnb29nbGUtYXBwLWVuZ2luZS1kamFuZ29yIgsSBk1vZG"""
-              """VsQiIGcGFyZW50DAsSBk1vZGVsQSIEdGVzdAw", """
+      "json": """[{"pk": "%s", """
               """"model": "tests.modela", "fields": """
               """{"description": null}}]""",
       "yaml": """- fields: {description: null}\n  """
               """model: tests.modela\n  """
-              """pk: ahhnb29nbGUtYXBwLWVuZ2luZS1kamFuZ29yIgsSBk1"""
-              """vZGVsQiIGcGFyZW50DAsSBk1vZGVsQSIEdGVzdAw\n""",
+              """pk: %s\n""",
       "xml":  """<?xml version="1.0" encoding="utf-8"?>\n"""
               """<django-objects version="1.0">\n"""
-              """<entity kind="tests.modela" key="ahhnb29nbGUtYXBwL"""
-              """WVuZ2luZS1kamFuZ29yIgsSBk1vZGVsQiIGcGFyZW50DA"""
-              """sSBk1vZGVsQSIEdGVzdAw">\n  """
+              """<entity kind="tests.modela" key="%s">\n  """
               """<key>tag:google-app-engine-django.gmail.com,"""
               """2008-05-13:ModelA[ahhnb29nbGUtYXBwLWVuZ2luZS1kam"""
               """FuZ29yIgsSBk1vZGVsQiIGcGFyZW50DAsSBk1vZGVsQSIEdGVzdAw"""
@@ -285,10 +287,8 @@ class SerializationTest(unittest.TestCase):
 
   def runObjectWithNonExistantParentTest(self, format):
     """Test deserialization of an object referencing a non-existant parent."""
-    # TODO(kumar) this was failing
-    # See http://code.google.com/p/google-app-engine-django/issues/detail?id=154
-    # self.doModelKeyDeserialisationReferenceTest(
-    #     self.SERIALIZED_WITH_NON_EXISTANT_PARENT, format)
+    self.doModelKeyDeserialisationReferenceTest(
+        self.SERIALIZED_WITH_NON_EXISTANT_PARENT, format)
 
   def runCreateKeyReferenceFromListTest(self, format):
     """Tests that a reference specified as a list in json/yaml can be loaded OK."""
