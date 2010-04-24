@@ -1,0 +1,43 @@
+{% comment %}
+The base site template for CHIRP's web apps.
+
+TODO(trow): My HTML skills are extremely rudimentary.  Someone who understands
+CSS, etc. should fix this.
+{% endcomment %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-us" xml:lang="en-us">
+<head>
+<link rel="stylesheet" type="text/css" href="/media/common/css/base.css">
+<link rel="stylesheet" type="text/css" href="/media/common/css/forms.css">
+{% block extrastyle %}{% endblock %}
+{% block extrahead %}{% endblock %}
+<title>CHIRP{% if title %}: {% endif %}{{ title }}</title>
+
+{# Block all robots by default #}
+<meta name="robots" content="NONE,NOARCHIVE" />
+</head>
+
+<body>
+
+<div id="container">
+
+  <div id="danger">
+    This system is under active development.  It might not work properly in
+    all browsers.  We apologize in advance
+    for any problems you might have.  If you find a bug, please
+  <a href="http://code.google.com/p/chirpradio/issues/entry">file a bug report
+    </a> and let us know.
+  </div>
+
+  <div id="auth">
+    {% if user %}
+    {{ user }} <a href="{{ logout_url }}">Sign Out</a>
+    {% else %}
+    <a href="{{ login_url }}">Sign In</a>
+    {% endif %}
+  </div> {# end of auth #}
+  {% block page_content %}{% endblock %}
+</div> {# end of container #}
+
+</body>
+</html>
