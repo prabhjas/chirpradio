@@ -1,0 +1,5 @@
+cron:
+- description: weekly traffic log generator
+  url: /traffic_log/generate
+  schedule: every sunday 23:00
+#  timezone: America/Chicago

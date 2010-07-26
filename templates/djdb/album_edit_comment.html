@@ -1,0 +1,61 @@
+{% extends "djdb/internal_page.html" %}
+
+{% block breadcrumbs %}
+<a href="/">chipradio home</a> /
+<a href="/djdb/">DJ Database home</a>
+{% endblock %}
+
+{% block content %}
+
+You are
+{% if edit %}
+editing your comment
+{% else %}
+writing a new comment
+{% endif %}
+for
+<a href="{{ album.url }}"><b>{{ album.title }}</b></a>
+by
+<a href="{{ album.artist_url }}">{{ album.artist_name }}</a>.
+
+<p>
+Please proofread your comment carefully before you submit it.
+</p>
+
+<form action="{{ comment.key }}" method="post">
+{% if preview %}
+<p>
+Your text of your comment will look like this when it is displayed:
+</p>
+<div style="BACKGROUND-COLOR: #f0f0f0; PADDING: 10px; BORDER: black 3px solid">
+<p>
+<blockquote>
+{{ preview|safe }}
+</blockquote>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>--posted by
+{{ user }}
+on {% now "F j, Y P" %}</small>
+</p>
+</div>
+
+<p>
+If this looks good to you, click on "Save".  Otherwise you can
+continue to edit the post in the form below.
+</p>
+<input type="submit" name="save" value="Save">
+<hr><br><br>
+{% endif %}
+
+<p>
+You can use basic HTML markup in the body of your comment; unsupported
+HTML will be stripped out automatically.
+</p>
+<p>
+The allowed HTML tags are: {{ valid_html_tags }}
+</p>
+<table>
+  {{ form.as_table }}
+</table>
+<input type="submit" name="preview" value="Preview">
+
+{% endblock %}

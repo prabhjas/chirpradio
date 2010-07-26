@@ -1,0 +1,37 @@
+{% extends 'common/internal_page.html' %}
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+
+{% block extrahead %}
+<script type="text/javascript" 
+    src="/media/common/js/jquery/jquery-1.3.1.js"></script>
+<script type="text/javascript" 
+    src="/media/common/js/chirp/chirp.js"></script>
+
+{% block extrahead_for_page %}{% endblock %}
+
+{% endblock %}
+
+{% block content %}
+<nobr>
+{% block topbar %}
+<h2>Traffic Log - {% now "F j, Y" %}</h2>
+{% endblock %}
+</nobr>
+
+{% block nav %}
+<table cellspacing="0" cellpadding="5" border="1">
+<tr align="center" valign="bottom"><td><a href="/traffic_log/">Traffic Log</a></td>
+<td><a href="/traffic_log/spot">Spots</a></td>
+<td><a href="/traffic_log/spot/create">New Spot</a></td>
+<td><a href="/traffic_log/spot-copy/create">Add Spot Copy</a></td>
+<td><a href="/traffic_log/report">Report</a></td>
+</table>
+{% endblock %}
+
+<!--div id='tlcontent'>Loading...</div-->
+<div class="contents">
+{% block contents %}{% endblock %}
+</div>
+{% endblock %}
+
