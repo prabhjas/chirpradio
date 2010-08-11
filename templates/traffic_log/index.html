@@ -1,0 +1,46 @@
+{% extends 'traffic_log/base.html' %}
+{% load traffic_log_extras %}
+
+{% block extrahead_for_page %}
+<link rel="stylesheet" type="text/css" href="/media/common/js/jquery-facebox/facebox.css" media="screen" />
+<script type="text/javascript" src="/media/common/js/jquery-facebox/facebox.js"></script>
+<link rel="stylesheet" type="text/css" href="/media/traffic_log/css/trafficlog.css" media="screen" />
+<script type="text/javascript" src="/media/traffic_log/js/trafficlog.js"></script>
+{% endblock %}
+
+{% block title %}
+Traffic Log Spots
+{% endblock %}
+
+
+{% block nav %}
+{{ block.super }}
+<br/>
+
+<input id="refresh-button" type="button" value="Refresh time slots" />
+
+{% endblock %}
+{% block contents %}
+<p/>
+
+<table id="traffic_log">
+<tr>
+    <th>Time slot</th>
+    <th>Spot</th>
+    <th>Actions</th>
+</tr>
+{% for slotted_spot in slotted_spots %}
+
+{% for spot_view in slotted_spot.iter_spots_at_constraint %}
+<tr class="{% if spot_view.finished %}finished{% else %}new{% endif %}">
+    <td>{% ifchanged %}<b>{{ slotted_spot.readable_slot_time }}</b>{% endifchanged %}</td>
+    <td>{{ spot_view.spot.title }}</td>
+    <td>
+        <a class="show-text-for-reading" 
+            href="{% url_to_read_spot slotted_spot spot_view.spot %}">Show text for reading</a>
+    </td>
+</tr>
+{% endfor %}
+    
+{% endfor %}
+{% endblock %}
