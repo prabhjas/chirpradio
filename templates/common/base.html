@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-us" xml:lang="en-us">
+<head>
+<link rel="stylesheet" type="text/css" href="/media/common/css/base.css">
+<link rel="stylesheet" type="text/css" href="/media/common/css/forms.css">
+{% block extrastyle %}{% endblock %}
+{% block extrahead %}{% endblock %}
+<title>CHIRP{% if title %}: {% endif %}{{ title|removetags:"a" }}</title>
+
+{# Block all robots by default #}
+<meta name="robots" content="NONE,NOARCHIVE" />
+</head>
+
+<body>
+
+<div id="container">
+
+  <div id="headband">
+    
+    <p id="warning">This system is under active development.  It might not work properly in
+    all browsers.  We apologize in advance
+    for any problems you might have.  If you find a bug, please
+    <a href="http://code.google.com/p/chirpradio/issues/entry">file a bug report</a>
+    and let us know.</p>
+
+  </div>
+
+  {% block page_content %}{% endblock %}
+
+</div> {# end of container #}
+
+</body>
+</html>
