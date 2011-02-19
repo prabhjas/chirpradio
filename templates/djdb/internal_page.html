@@ -1,0 +1,43 @@
+{% extends "common/base.html" %}
+
+{% block extrastyle %}
+<link rel="stylesheet" href="/media/djdb/djdb.css" />
+{% endblock %}
+
+{% block page_content %}
+  <div id="header">
+    <a href="/">
+	  <img src="/media/common/img/chirp-logo-small.gif" style="float:left;">
+    </a>
+    <h1>CHIRP Radio internal applications</h1>
+    &nbsp;
+    <div class="bugreport"><a href="http://code.google.com/p/chirpradio/issues/entry">file a bug report</a></div>
+  </div> {# end of header #}
+  <div class="breadcrumbs">{% block breadcrumbs %}{% endblock %}</div>
+  <div id="djdb_header">
+    <div id="djdb_links">
+    {% if user.is_music_director %}
+      <a href="/djdb/tags">Edit tags</a> |
+    {% endif %}
+      <a href="/djdb/user">Find a DJ</a> |
+      <a href="/djdb/reviews">Browse Reviews</a> |
+      <a href="/djdb/crate">Go to your crate</a>
+    </div>
+    <div id="djdb_search">
+      <form action="/djdb/" method="post">
+        <input type="text" name="query"/>
+        <input type="submit" value="Search"/>
+      </form>
+    </div>
+  </div>
+  <div id="content">
+    {% if title %}
+    <h1>
+      {% autoescape off %}
+{{ title }}
+      {% endautoescape %}
+    </h1>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </div> {# end of content #}
+{% endblock %}
