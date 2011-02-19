@@ -20,7 +20,11 @@
 
 <div id="playlist"> <!-- site wrapper -->
 {% if not request.is_from_studio and not request.session.is_from_studio_override %}
-<h1 class="errornote">WARNING! You are not in the studio, you sure you want to modify this playlist? <input type="checkbox" name="is_from_studio_override" /> Yes, I know, don't bug me.</h1>
+<h1 class="errornote">
+    WARNING! You are not in the studio, you sure you want to modify this playlist?
+    <input type="checkbox" name="is_from_studio_override" id="id_is_from_studio_override" /> 
+    <label for="id_is_from_studio_override">Yes, I know, don't bug me.</label>
+</h1> 
 {% endif %}
 <div id="form-column"> <!-- form column -->
 
@@ -54,6 +58,14 @@
 <label for="label">Label</label>
 {{ form.label }}
 
+<label for="category">Category</label>
+<div class="category">
+{{ form.is_heavy_rotation }} Heavy Rotation
+{{ form.is_light_rotation }} Light Rotation<br/>
+{{ form.is_local_current }} Local Current
+{{ form.is_local_classic }} Local Classic
+</div>
+
 {% if not add_break %}
 {{ form.song_notes.errors }}
 {% endif %}
@@ -76,6 +88,14 @@
 </div> <!-- end form column -->
 <div id="playlist-column"> <!-- playlist column -->
 
+<div class="tracks_played">
+Tracks played since {{ last_dt|date:"P" }}:<br/>
+  <div class="tracks_heavy_rotation" title="Heavy Rotation">{{ quotas.heavy_rotation_played }} / {{ quotas.heavy_rotation_target }}</div>
+  <div class="tracks_light_rotation" title="Light Rotation">{{ quotas.light_rotation_played }} / {{ quotas.light_rotation_target }}</div>
+  <div class="tracks_local_current" title="Local Current">{{ quotas.local_current_played }} / {{ quotas.local_current_target }}</div>
+  <div class="tracks_local_classic" title="Local Classic">{{ quotas.local_classic_played }} / {{ quotas.local_classic_target }}</div>
+</div>
+
 <h2>Artist &bull; Song Title &bull; Album &bull; Label</h2>
 
 {% if playlist_events %}
@@ -89,6 +109,20 @@
     
         <div class="song-info {% if event.is_new %}new{% endif %}"> <!-- song information container -->
         <p class="time">{{ event.established_display|time:"g:i A" }}</p>
+
+      {% if 'heavy_rotation' in event.categories %}
+<div class="tracks_heavy_rotation">Heavy Rotation</div>
+      {% endif %}
+      {% if 'light_rotation' in event.categories %}
+<div class="tracks_light_rotation">Light Rotation</div>
+      {% endif %}
+      {% if 'local_current' in event.categories %}
+<div class="tracks_local_current">Local Current</div>
+      {% endif %}
+      {% if 'local_classic' in event.categories %}
+<div class="tracks_local_classic">Local Classic</div>
+      {% endif %}
+
         <p><span class="artist">{{ event.artist_name }}</span> 
             &bull; <span class="song">{{ event.track_title }}</span> 
             &bull; <span class="album">{{ event.album_title_display }}</span>
