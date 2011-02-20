@@ -22,6 +22,7 @@ import unittest
 from django.utils import simplejson
 import fudge
 from google.appengine.api import memcache
+from google.appengine.api.taskqueue import TransientError
 from nose.tools import eq_
 from webtest import TestApp
 
@@ -61,7 +62,6 @@ class APITest(unittest.TestCase):
     def tearDown(self):
         assert memcache.flush_all()
         clear_data()
-        fudge.clear_expectations()
 
     def play_stevie_song(self, song_name):
         self.playlist_track = PlaylistTrack(
@@ -85,7 +85,7 @@ class TestServiceIndex(APITest):
 
     def test_index(self):
         eq_(sorted([s[0] for s in self.request('/api/')['services']]),
-            ['/api/', 
+            ['/api/',
              '/api/current_playlist'])
 
 
@@ -111,28 +111,32 @@ class TestTrackPlayingNow(APITest):
             self.playlist_track.established_display.strftime('%Y-%m-%d'))
         assert 'id' in current
 
-    @fudge.with_fakes
-    def test_build_lastfm_links(self):
-        fake_tq = (fudge.Fake('taskqueue').expects('add')
-                        .with_args(url='/api/_check_lastfm_links'))
-        with fudge.patched_context(api.handler, 'taskqueue', fake_tq):
-            data = self.request('/api/current_playlist')
-            current = data['now_playing']
-            eq_(current['lastfm_urls'], {
-                'sm_image': None,
-                'med_image': None
-            })
+    @fudge.patch('api.handler.taskqueue')
+    def test_build_lastfm_links(self, fake_tq):
+        fake_tq.expects('add').with_args(url='/api/_check_lastfm_links')
+        data = self.request('/api/current_playlist')
+        current = data['now_playing']
+        eq_(current['lastfm_urls'], {
+            'sm_image': None,
+            'med_image': None
+        })
 
-    @fudge.with_fakes
-    def test_build_partial_lastfm_links(self):
-        fake_tq = (fudge.Fake('taskqueue').expects('add')
-                        .with_args(url='/api/_check_lastfm_links')
-                        .times_called(2))
-        with fudge.patched_context(api.handler, 'taskqueue', fake_tq):
-            data = self.request('/api/current_playlist')
-            data['now_playing']['lastfm_urls']['sm_image'] = 'http://.../'
-            memcache.set('api.current_track', data)
-            data = self.request('/api/current_playlist')
+    @fudge.patch('api.handler.taskqueue.add',
+                 'api.handler.log')
+    def test_build_lastfm_links_logs_errors(self, fake_add, fake_log):
+        fake_add.expects_call().raises(TransientError)
+        fake_log.expects('exception')
+        data = self.request('/api/current_playlist')
+
+    @fudge.patch('api.handler.taskqueue')
+    def test_build_partial_lastfm_links(self, fake_tq):
+        (fake_tq.expects('add')
+                .with_args(url='/api/_check_lastfm_links')
+                .times_called(2))
+        data = self.request('/api/current_playlist')
+        data['now_playing']['lastfm_urls']['sm_image'] = 'http://.../'
+        memcache.set('api.current_track', data)
+        data = self.request('/api/current_playlist')
 
     def test_non_ascii(self):
         unicode_text = 'フォクすけといっしょ'.decode('utf8')
@@ -209,14 +213,14 @@ class TestCheckLastFMLinks(APITest):
         self.play_stevie_song('Tuesday Heartbreak')
         self.play_stevie_song('Big Brother')
 
-    @fudge.with_fakes
-    def test_build_links(self):
+    @fudge.patch('api.handler.pylast.get_lastfm_network')
+    def test_build_links(self, fm_getter):
         data = self.request('/api/current_playlist')
-        fm_getter = (fudge.Fake('get_lastfm_network', expect_call=True)
-                          .with_args(api_key=dbconfig['lastfm.api_key']))
-        (fm_getter.returns_fake()
+        (fm_getter.expects_call()
+                  .with_args(api_key=dbconfig['lastfm.api_key'])
+                  .returns_fake()
                   .expects('get_album')
-                  .with_args('Stevie Wonder', 
+                  .with_args('Stevie Wonder',
                              'Talking Book')
                   .returns_fake()
                   .expects('get_cover_image')
@@ -233,9 +237,8 @@ class TestCheckLastFMLinks(APITest):
                   .next_call()
                   .with_args(pylast.COVER_MEDIUM)
                   .returns('http://last.fm/med2.jpg'))
-        with fudge.patched_context(api.handler.pylast, 'get_lastfm_network',
-                                   fm_getter):
-            self.client.post('/api/_check_lastfm_links')
+
+        self.client.post('/api/_check_lastfm_links')
 
         data = self.request('/api/current_playlist')
         current = data['now_playing']
@@ -248,17 +251,16 @@ class TestCheckLastFMLinks(APITest):
             'med_image': 'http://last.fm/med2.jpg'
         })
 
-    @fudge.with_fakes
-    def test_recover_from_errors(self):
+    @fudge.patch('api.handler.pylast.get_lastfm_network')
+    def test_recover_from_errors(self, fm_getter):
         data = self.request('/api/current_playlist')
-        fm_getter = (fudge.Fake('get_lastfm_network', expect_call=True)
-                          .with_args(api_key=dbconfig['lastfm.api_key']))
-        (fm_getter.returns_fake()
+        (fm_getter.expects_call()
+                  .with_args(api_key=dbconfig['lastfm.api_key'])
+                  .returns_fake()
                   .expects('get_album')
                   .raises(pylast.WSError('', '', 'Album not found')))
-        with fudge.patched_context(api.handler.pylast, 'get_lastfm_network',
-                                   fm_getter):
-            self.client.post('/api/_check_lastfm_links')
+
+        self.client.post('/api/_check_lastfm_links')
 
         data = self.request('/api/current_playlist')
         current = data['now_playing']
