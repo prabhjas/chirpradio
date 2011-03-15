@@ -46,7 +46,7 @@ import tag_util
 
 log = logging.getLogger(__name__)
 
-def fetch_activity(num=None, days=None, start_dt=None):
+def fetch_activity(num=None, start_dt=None, days=None):
     activity = []
     
     # Get recent reviews.
@@ -54,7 +54,7 @@ def fetch_activity(num=None, days=None, start_dt=None):
         num_reviews = 999
     else:
         num_reviews = num
-    revs = review.fetch_recent(num_reviews, days=days, start_dt=start_dt)
+    revs = review.fetch_recent(num_reviews, start_dt=start_dt, days=days)
     for rev in revs:
         dt = rev.created_display.strftime('%Y-%m-%d %H:%M')
         if len(rev.text) > 100:
@@ -79,7 +79,7 @@ def fetch_activity(num=None, days=None, start_dt=None):
             num_comments = 999
         else:
             num_comments = num - len(activity)        
-        comments = comment.fetch_recent(num_comments, days=days, start_dt=start_dt)
+        comments = comment.fetch_recent(num_comments, start_dt=start_dt, days=days)
         for com in comments:
             dt = com.created_display.strftime('%Y-%m-%d %H:%M')
             if len(com.text) > 100:
@@ -104,7 +104,7 @@ def fetch_activity(num=None, days=None, start_dt=None):
             num_tags = 999
         else:
             num_tags = num - len(activity)
-        tag_edits = tag_util.fetch_recent(num_tags, days=days, start_dt=start_dt)
+        tag_edits = tag_util.fetch_recent(num_tags, start_dt=start_dt, days=days)
         for tag_edit in tag_edits:
             dt = tag_edit.timestamp_display.strftime('%Y-%m-%d %H:%M')
             for tag in tag_edit.added:
@@ -174,7 +174,9 @@ def landing_page(request, ctx_vars=None):
     ctx_vars['title'] = 'DJ Database'
 
     # Fetch recent activity.
-    ctx_vars["recent_activity"] = fetch_activity(num=10, days=5)
+    days = 5
+    start_dt = datetime.now() - timedelta(days=days)
+    ctx_vars["recent_activity"] = fetch_activity(10, start_dt, days)
 
     if request.method == "POST":
         query_str = request.POST.get("query")
@@ -210,7 +212,6 @@ def activity_page(request, ctx_vars=None):
     
     now = datetime.now().replace(hour=0, minute=0, second=0,
                                  microsecond=0)
-    days = 1
     if request.method == 'GET':
         form = forms.ListActivityForm({'from_month': now.month,
                                        'from_day': now.day,
@@ -240,7 +241,7 @@ def activity_page(request, ctx_vars=None):
     
     ctx_vars['form'] = form
     ctx_vars['start_dt'] = start_dt
-    ctx_vars['recent_activity'] = fetch_activity(days=days, start_dt=start_dt)
+    ctx_vars['recent_activity'] = fetch_activity(start_dt=start_dt, days=1)
             
     ctx = RequestContext(request, ctx_vars)
     return http.HttpResponse(template.render(ctx))
@@ -290,7 +291,7 @@ def get_played_tracks(events):
     tracks = []
     for event in events:
         pl_view = PlaylistEventView(event)
-        dt = pl_view.established.strftime('%Y-%m-%d %H')
+        dt = pl_view.established_display.strftime('%Y-%m-%d %H')
         if prev_dt is not None and dt != prev_dt:
             played_tracks.append((datetime.strptime(prev_dt, '%Y-%m-%d %H'), tracks))
             tracks = []
@@ -608,6 +609,7 @@ def update_tracks(request, album_id_str):
                 break
 
     # Update track explicit and recommended tags.
+    error = ''
     mark_as = request.POST.get('mark_as')
     for name in request.POST.keys() :
         if re.match('checkbox_', name) :
@@ -617,13 +619,19 @@ def update_tracks(request, album_id_str):
                 if models.EXPLICIT_TAG in models.TagEdit.fetch_and_merge(track) :
                     tag_util.remove_tag_and_save(request.user, track, models.EXPLICIT_TAG)
                 else :
-                    tag_util.add_tag_and_save(request.user, track, models.EXPLICIT_TAG)
+                    tag_util.modify_tags_and_save(request.user, track,
+                                                  [models.EXPLICIT_TAG],
+                                                  [models.RECOMMENDED_TAG])
             elif mark_as == 'recommended' :
-                if models.RECOMMENDED_TAG in models.TagEdit.fetch_and_merge(track) :
-                    tag_util.remove_tag_and_save(request.user, track, models.RECOMMENDED_TAG)
-                else :
-                    tag_util.add_tag_and_save(request.user, track, models.RECOMMENDED_TAG)
-
+                if models.EXPLICIT_TAG in models.TagEdit.fetch_and_merge(track):
+                    error = 'Cannot recommend an explicit track.'
+                else:
+                    if models.RECOMMENDED_TAG in models.TagEdit.fetch_and_merge(track) :
+                        tag_util.remove_tag_and_save(request.user, track, models.RECOMMENDED_TAG)
+                    else :
+                        tag_util.add_tag_and_save(request.user, track, models.RECOMMENDED_TAG)
+    ctx_vars['error'] = error
+    
     request.method = 'GET'            
     return album_info_page(request, album_id_str, ctx_vars)
 
@@ -792,6 +800,7 @@ def album_info_page(request, album_id_str, ctx_vars=None):
         ctx_vars["album_cover_xl"] = lastfm_album.get_cover_image(pylast.COVER_EXTRA_LARGE)
     except:
         ctx_vars["album_cover_m"] = "/media/common/img/no_cover_art.png"
+        ctx_vars["album_cover_xl"] = "/media/common/img/no_cover_art.png"
         pass
 
     ctx_vars["album"] = album
@@ -1077,18 +1086,26 @@ def crate_page(request, ctx_vars=None):
 def add_crate_item(request):
     item = None
     if request.method == 'POST':
-        artist = request.POST.get('artist')
-        album = request.POST.get('album')
-        track = request.POST.get('track')
-        label = request.POST.get('label')
-        notes = request.POST.get('notes')
-        if artist != "" or album != "" or track != "" or label != "":
-            item = models.CrateItem(artist=artist,
-                                    album=album,
-                                    track=track,
-                                    label=label,
-                                    notes=notes)
-            AutoRetry(db).put(item)
+        form = forms.CrateForm(request.POST)
+        if form.is_valid():
+            artist = form.cleaned_data['artist']
+            album = form.cleaned_data['album']
+            track = form.cleaned_data['track']
+            label = form.cleaned_data['label']
+            notes = form.cleaned_data['notes']
+            categories = []
+            for category in models.ALBUM_CATEGORIES:
+                field = 'is_%s' % category
+                if field in form.cleaned_data and form.cleaned_data[field]:
+                    categories.append(category)            
+            if artist != "" or album != "" or track != "" or label != "":
+                item = models.CrateItem(artist=artist,
+                                        album=album,
+                                        track=track,
+                                        label=label,
+                                        categories=categories,
+                                        notes=notes)
+                AutoRetry(db).put(item)
     else:
         item_key = request.GET.get('item_key')
         if not item_key:
@@ -1185,6 +1202,57 @@ def remove_all_crate_items(request):
     ctx_vars = {}
     return crate_page(request, ctx_vars)
     
+def send_to_playlist(request, key):
+    """
+    Returns item info, presumably to an AJAX call.
+    """
+    entity = AutoRetry(db).get(key)
+    artist_name = ''
+    artist_key = ''
+    track_title = ''
+    track_key = ''
+    album_title = ''
+    album_key = ''
+    label = ''
+    notes = ''
+    categories = ''
+    if entity.kind() == 'Artist':
+        artist_name = entity.name.strip().replace('/', '//')
+        artist_key = entity.key()
+    elif entity.kind() == 'Album':
+        artist_name = entity.artist_name.strip().replace('/', '//')
+        if entity.album_artist:
+            artist_key = entity.album_artist.key()
+        album_title = entity.title.strip().replace('/', '//')
+        album_key = entity.key()
+        categories = ','.join(entity.category_tags)
+    elif entity.kind() == 'Track':
+        artist_name = entity.artist_name.strip().replace('/', '//')
+        if entity.track_artist:
+            artist_key = entity.track_artist.key()
+        else:
+            if entity.album.album_artist:
+                artist_key = entity.album.album_artist.key()
+        track_title = entity.title.strip().replace('/', '//')
+        track_key = entity.key()
+        album_title = entity.album.title.strip().replace('/', '//')
+        album_key = entity.album.key()
+        if entity.album.label:
+            label = entity.album.label.strip().replace('/', '//')
+        categories = ','.join(entity.album.category_tags)
+    elif entity.kind() == 'CrateItem':
+        artist_name = entity.artist.strip().replace('/', '//')
+        track_title = entity.track.strip().replace('/', '//')
+        album_title = entity.album.strip().replace('/', '//')
+        label = entity.label.strip().replace('/', '//')
+        notes = entity.notes.strip().replace('/', '//')
+        categories = ','.join(entity.categories)
+    else:
+        raise Exception('Invalid entity sent to playlist')
+    response = '"%s / %s / %s / %s / %s / %s / %s / %s / %s"' % (artist_name, artist_key, track_title, track_key, album_title, album_key, label, notes, categories)
+
+    return http.HttpResponse(response)
+
 # Only the music director has the power to add new artists.
 @require_role(roles.MUSIC_DIRECTOR)
 def artists_bulk_add(request):

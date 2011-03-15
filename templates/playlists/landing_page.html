@@ -54,10 +54,10 @@
 
 <label for="category">Category</label>
 <div class="category">
-{{ form.is_heavy_rotation }} Heavy Rotation
-{{ form.is_light_rotation }} Light Rotation<br/>
-{{ form.is_local_current }} Local Current
-{{ form.is_local_classic }} Local Classic
+<div class="tracks_heavy_rotation">{{ form.is_heavy_rotation }} Heavy rotation</div>
+<div class="tracks_light_rotation">{{ form.is_light_rotation }} Light rotation</div><br/>
+<div class="tracks_local_current">{{ form.is_local_current }} Local current</div>
+<div class="tracks_local_classic">{{ form.is_local_classic }} Local classic</div>
 </div>
 
 {% if not add_break %}
@@ -81,6 +81,8 @@
 
 </div> <!-- end form column -->
 <div id="playlist-column"> <!-- playlist column -->
+
+<input name="id_allow_receive" id="id_allow_receive" type="checkbox"/>Allow receiving from DJ database
 
 <div class="tracks_played">
 Tracks played since {{ last_dt|date:"P" }}:<br/>
@@ -175,7 +177,7 @@ Tracks played since {{ last_dt|date:"P" }}:<br/>
 {# <p><span class="artist">Portishead</span> &bull; <span class="song">Hunter</span> &bull; <span class="album">Silence</span> &bull; <span class="label">Mercury</span></p> #}
 {# </div> #}
 
-<p class="links"><a href="http://chirpradio.org/">CHIRPradio.org</a> &bull; <a href="http://chicagoindieradio.org/">CHIRP Wesbite</a></p>
+<p class="links"><a href="http://chirpradio.org/">CHIRPradio.org</a> &bull; <a href="http://chicagoindieradio.org/">CHIRP Website</a></p>
 
 </div> <!-- end playlist column -->
 </div> <!-- end site wrapper -->    

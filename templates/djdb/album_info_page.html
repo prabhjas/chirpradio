@@ -210,6 +210,9 @@ Mark/Unmark selected as: <a id="mark_explicit" href="update">Explicit</a>,
   {% endfor %}
     </td>
     <td>
+      <a class="send_to_playlist" href="/djdb/crate/send_to_playlist/{{ track.key }}"><img src="/media/common/img/play.png" alt="Send to Playlist" title="Send to Playlist"/></a>    
+    </td>
+    <td>
   {% ifincrate user track %}
 <a href="/djdb/crate/remove_item?response_page=album&item_key={{ track.key }}"><img src="/media/common/img/remove.png" alt="Remove Track from Crate" title="Remove Track from Crate"/></a>
   {% else %}
@@ -242,7 +245,7 @@ Mark/Unmark selected as: <a id="mark_explicit" href="update">Explicit</a>,
     {% else %}
               <input type="input" name="track_artist_{{ forloop.counter }}" id="track_artist_key_{{ forloop.counter }}"/>
     {% endif %}<br/>
-              <i>You <b>must</b> select an artist from the autocomplete list.</i>
+              <i>You <b>must</b> select an artist from<br/>the autocomplete list.</i>
             </td>
           </tr>
         </table>

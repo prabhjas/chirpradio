@@ -232,7 +232,9 @@ class Album(db.Model):
       title: The name of the album.  This is used in TALB tags.
       pronunciation: How to pronounce the album title.
       label: The label of the album.
+      label_display: The displayed label.
       year: The year of the album.
+      year_display: The displayed year.
       disc_number: If specified, this album is one part of a multi-disc
         set.
       album_id: A unique integer identifier that is assigned to the
@@ -397,6 +399,31 @@ class Album(db.Model):
         """Returns a sorted list of tags."""
         return sorted(self.current_tags, key=unicode.lower)
 
+    @property
+    def label_display(self):
+        """Returns the displayed label."""
+        if self.label is None:
+            return ""
+        else:
+            return self.label
+            
+    @property
+    def year_display(self):
+        """Returns the displayed year."""
+        if self.year is None:
+            return ""
+        else:
+            return self.year
+            
+    @property
+    def category_tags(self):
+        """Returns a list of category tags."""
+        tags = []
+        for tag in self.current_tags:
+            if tag in ALBUM_CATEGORIES:
+                tags.append(tag)
+        return tags
+        
     def has_tag(self, tag):
         """Returns true if tag 'tag' is currently set."""
         tag = tag.lower()
@@ -724,12 +751,12 @@ class Crate(db.Model):
     # List of keys to items.
     items = db.ListProperty(db.Key)
     
-    # List of positions for ordering.  When the crate page is shown
+    # List of positions for ordering. When the crate page is shown
     # and reorders take place, you can't reorder the list directly
     # each time since the original positions are referenced in the
-    # list item id's, which do not change.  So you have to keep track
+    # list item id's, which do not change. So you have to keep track
     # of the order separately. When the crate page is reloaded, then
-    # the actual item list should be reordered.  I suppose some
+    # the actual item list should be reordered. I suppose some
     # javascript could be added to update the list item id's when
     # reordering takes place...
     order = db.ListProperty(int)
@@ -744,5 +771,5 @@ class CrateItem(db.Model):
     track = db.StringProperty()
     label = db.StringProperty()
     notes = db.StringProperty()
+    categories = db.StringListProperty(required=True)
 
-#    @classmethod

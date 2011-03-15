@@ -198,13 +198,18 @@ li.activity_unexplicit {
 }
 #image_box .close {
   display: block;
-  width: 140px;
   float: right;
   text-align: right;
   padding-right: 5px;
 }
 
 h3.categories div {
+  display: inline;
+}
+div.categories {
+  display: inline;
+}
+div.categories div {
   display: inline;
 }
 div.track_heavy_rotation {
