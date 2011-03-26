@@ -1,0 +1,233 @@
+blockquote {
+    font-size: 12px;
+    color: #000;
+    margin-left: 2px;
+    padding-left: 10px;
+    border-left: 5px solid #ddd;
+}
+
+#djdb_header {
+  padding: 3px 8px 3px 8px;
+  font-size: 11px;
+  overflow: hidden;
+}
+#djdb_links {
+    float: left;
+    padding-top: 5px;
+}
+#djdb_search {
+    float: right;
+}
+
+.ac_results {
+	padding: 0px;
+	border: 1px solid WindowFrame;
+	background-color: Window;
+	overflow: hidden;
+}
+
+.ac_results ul {
+	width: 100%;
+	list-style-position: outside;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.ac_results iframe {
+	display:none;/*sorry for IE5*/
+	display/**/:block;/*sorry for IE5*/
+	position:absolute;
+	top:0;
+	left:0;
+	z-index:-1;
+	filter:mask();
+	width:3000px;
+	height:3000px;
+}
+
+.ac_results li {
+	margin: 0px;
+	padding: 2px 5px;
+	cursor: pointer;
+	display: block;
+	width: 100%;
+	font: menu;
+	font-size: 12px;
+	overflow: hidden;
+}
+
+.ac_loading {
+	background : Window url('/media/common/img/indicator.gif') right center no-repeat;
+}
+
+.ac_over {
+	background-color: Highlight;
+	color: HighlightText;
+}
+
+#sortable { list-style-type: none; margin: 0; padding: 0; width: 100%; }
+#sortable li { list-style-type:none; margin: 0 0 -1px 0; padding: 0.2em; font-size: 1.3em; border: solid 1px}
+#sortable li span { position: relative; float: right; }
+input.text { margin-bottom:12px; width:95%; padding: .4em; }
+fieldset { padding:0; border:0; margin-top:25px; }
+.ui-button { outline: 0; margin:0; text-decoration:none; !important; cursor:pointer; position: relative; text-align: center; }
+.ui-dialog .ui-state-highlight, .ui-dialog .ui-state-error { padding: .3em;  }
+
+#crate {
+  width: 100%;
+  margin: 0 auto;
+}
+#add-crate-item-column {
+  float: left;
+  width: 40%;
+}
+#crate-items-column {
+  float: right;
+  width: 60%;
+}
+
+div.search_help {
+  border: 1px solid;
+  margin: 5px 0px;
+  padding: 10px;
+  overflow: auto;
+  height: 100px;
+}
+
+div.tag {
+  border: 1px solid #666;
+  margin: 2px;
+  padding: 2px;
+  display: inline;
+}
+
+ul.activity {
+  padding-left: 5px;
+}
+li.activity_comment {
+  list-style-type: none;
+  background: url('/media/common/img/comment_icon.png') left top no-repeat;
+  padding-left: 20px;
+}
+li.activity_review {
+  list-style-type: none;
+  background: url('/media/common/img/review_icon.png') left top no-repeat;
+  padding-left: 20px;
+}
+li.activity_tag {
+  list-style-type: none;
+  background: url('/media/common/img/tag_add_icon.png') left top no-repeat;
+  padding-left: 20px;
+}
+li.activity_untag {
+  list-style-type: none;
+  background: url('/media/common/img/tag_remove_icon.png') left top no-repeat;
+  padding-left: 20px;
+}
+li.activity_recommended {
+  list-style-type: none;
+  background: url('/media/common/img/recommended_icon.png') left top no-repeat;
+  padding-left: 20px;
+}
+li.activity_unrecommended {
+  list-style-type: none;
+  background: url('/media/common/img/unrecommended_icon.png') left top no-repeat;
+  padding-left: 20px;
+}
+li.activity_explicit {
+  list-style-type: none;
+  background: url('/media/common/img/explicit_icon.png') left top no-repeat;
+  padding-left: 20px;
+}
+li.activity_unexplicit {
+  list-style-type: none;
+  background: url('/media/common/img/unexplicit_icon.png') left top no-repeat;
+  padding-left: 20px;
+}
+
+#image_box_wrapper { 
+  background: #000; 
+}
+#image_box {
+  font-family: arial, helvetica, sans-serif;
+  font-size: 9pt;
+  background: #fff; 
+  border-color: #ccc;
+}
+#image_box .title {
+  background: #ddd;
+}
+#image_box .close a {
+  font-weight: bold;
+  text-decoration: none;
+  color: #000;
+}
+#image_box .close a:hover {
+  background: none;
+  color: #f00;
+}
+#image_box .image {
+  background: #ddd;
+}
+
+#image_box_wrapper {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  -moz-opacity: .50;
+  filter: alpha(opacity=50);
+  opacity: .50;
+}
+#image_box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1200;
+  text-align: left;
+  border-size: 5px;
+  border-style: solid;
+}
+#image_box .title {
+  height: 20px;
+  line-height: 20px;
+  text-indent: 5px;
+}
+#image_box .close {
+  display: block;
+  float: right;
+  text-align: right;
+  padding-right: 5px;
+}
+
+h3.categories div {
+  display: inline;
+}
+div.categories {
+  display: inline;
+}
+div.categories div {
+  display: inline;
+}
+div.track_heavy_rotation {
+  color: red;
+}
+div.track_light_rotation {
+  color: green;
+}
+div.track_local_current {
+  color: darkcyan;
+}
+div.track_local_classic {
+  color: orange;
+}
+
+tr.track_list td {
+  border: none;
+  padding-bottom: 0;
+  margin-bottom: 0
+}
+

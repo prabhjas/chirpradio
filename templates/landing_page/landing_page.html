@@ -1,0 +1,42 @@
+{% extends "common/internal_page.html" %}
+
+{% block content %}
+<p>
+Hello {{ user }}!<br>
+{% if user.is_superuser %}
+Congratulations!  You are a superuser.<br>
+{% endif %}
+{% for r in user.roles %}
+You have been granted the role "{{ r }}".<br>
+{% endfor %}
+</p>
+
+<p>
+There isn't much here yet.  Things you can do:
+<ul>
+{% if user.is_dj %}
+<li> <a href="/djdb/">DJ Database</a>
+<li> <a href="/playlists/">Playlist Tracker</a>
+<li> <a href="/traffic_log/">Traffic Log</a>
+{% endif %}
+{% if user.is_volunteer_coordinator %}
+<li> <a href="/auth/">User Management</a>
+{% endif %}
+{% if user.is_music_director %}
+<li> <a href="/playlists/report">Playlist Tracker Report</a>
+{% endif %}
+<li> <a href="/auth/change_password">Change Your Password</a>
+{% if settings.IN_DEV %}
+<li style="color: red">Developer: Load
+  <a href="/djdb/_bootstrap">http://.../djdb/_bootstrap</a> to fill the
+  datastore with songs and albums from the Clash and David Bowie</li>
+<li style="color: red">Developer: Load
+  <a href="/common/_init_config">http://.../common/_init_config</a> to
+  initialize the datastore config.</li>
+<li style="color: red">Developer: <a href="/_ah/admin">Administer the
+  datastore</a> and other App Engine services.</li>
+{% endif %}
+</ul>
+</p>
+
+{% endblock %}
