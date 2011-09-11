@@ -1,0 +1,138 @@
+{% extends "djdb/internal_page.html" %}
+
+{% load common_extras %}
+{% load djdb_extras %}
+
+{% block breadcrumbs %}
+<a href="/">chipradio home</a> /
+<a href="/djdb/">DJ Database home</a>
+{% endblock %}
+
+{% block content %}
+
+{% block extrahead %}
+<script type="text/javascript" 
+    src="/media/common/js/jquery/jquery-1.3.1.js"></script>
+<script type="text/javascript" 
+    src="/media/djdb/js/djdb.js"></script>
+<script type="text/javascript"
+    src="/media/djdb/js/djdb_edit_artist.js"></script>
+{% endblock %}
+
+{% if artist.pronunciation %}
+<i>Pronunciation: {{ artist.pronunciation }}</i>
+{% endif %}
+
+{% if msg %}
+<div class="success">
+{{ msg }}
+</div>
+{% endif %}
+
+{% if user.is_music_director %}
+<div class="edit_artist" style="display: none">
+  <form action="" method="post">
+    <table>
+{{ artist_form.as_table }}
+    </table>
+    <input type="submit" name="update_artist" value="Update Artist">
+    <input class="edit_artist" type="submit" name="cancel" value="Cancel">
+  </form>
+</div>
+{% endif %}
+
+<h3>Albums</h3>
+
+{% if user.is_music_director %}
+<form method="post" name="djdbForm" action="update">
+  <p>
+    Select:
+    <a id="select_all" href="">All</a>,
+    <a id="select_none" href="">None</a>,
+  {% for category in categories %}
+    {% if not forloop.first %}, {% endif %}
+    <a id="select_{{ category }}" href="">{{ category|replace:"/_/ "|capfirst }}</a>
+  {% endfor %}<br/>
+Mark/Unmark selected as:
+  {% for category in categories %}
+    {% if not forloop.first %}, {% endif %}
+    <a id="mark_{{ category }}" href="update">{{ category|replace:"/_/ "|capfirst }}</a>
+  {% endfor %}
+  </p>
+
+  <input type="hidden" name="mark_as"/>
+  <input type="hidden" name="response_page" value="artist"/>
+  <input type="hidden" name="artist_name" value="{{ artist.name }}"/>
+{% endif %}
+
+<table>
+{% for album in albums %}
+  {% if album.revoked %}
+  <tr class="revoked">
+  {% else %}
+  <tr>
+  {% endif %}
+  {% if user.is_music_director %}
+    <td>
+      <input type="checkbox" class="checkbox 
+    {% for tag in album.current_tags %}
+      {% if tag in categories %}
+        {{ tag }}
+      {% endif %}
+    {% endfor %}"
+             name="checkbox_{{ forloop.counter }}"/>
+      <input type="hidden" name="album_key_{{ forloop.counter }}" value="{{ album.key }}"/>
+    </td>
+  {% endif %}
+    <td>
+  {% for tag in album.current_tags %}
+    {% if tag in categories %}
+      <div class="track_{{ tag }}">{{ tag|replace:"/_/ "|capfirst }}</div>
+    {% endif %}
+  {% endfor %}
+    </td>
+    <td><a href="{{ album.url }}">{{ album }}</a></td>
+    <td>
+  {% ifnotequal album.label None %}
+      {{ album.label }}
+  {% endifnotequal %}
+    </td>
+    <td>
+  {% ifnotequal album.year None %}
+      {{ album.year }}
+  {% endifnotequal %}
+    </td>
+    <td>
+      {{ album.num_tracks }} track{{ album.num_tracks|pluralize }}
+    </td>
+    <td>
+  {% if album.num_reviews %}
+    {{ album.num_reviews }} review{{ album.num_reviews|pluralize }}
+  {% endif %}
+    </td>
+    <td>
+  {% ifincrate user album %}
+      <a href="/djdb/crate/remove_item?response_page=artist&user_key={{ user.key }}&item_key={{ album.key }}"><img src="/media/common/img/remove.png" alt="Remove Album from Crate" title="Remove from Crate"/></a>
+  {% else %}
+      <a href="/djdb/crate/add_item?response_page=artist&user_key={{ user.key }}&item_key={{ album.key }}"><img src="/media/common/img/add.png" alt="Add Album to Crate" title="Add to Crate"/></a>
+  {% endifincrate %}
+    </td>
+  {% if user.is_music_director %}
+    <td>
+    {% if not artist.revoked %}
+      {% if album.revoked %}
+      <a href="/djdb/album/{{ album.album_id }}/unrevoke?response_page=artist" title="Unrevoke album"> <img src="/media/common/img/unrevoke_icon.png" alt="Unrevoke album"/></a>
+      {% else %}
+      <a href="/djdb/album/{{ album.album_id }}/revoke?response_page=artist" title="Revoke album"> <img src="/media/common/img/revoke_icon.png" alt="Revoke album"/></a>
+      {% endif %}
+    {% endif %}
+    </td>
+  {% endif %}
+  </tr>
+{% endfor %}
+</table>
+{% if user.is_music_director %}
+</form>
+{% endif %}
+
+{% endblock %}
