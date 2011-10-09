@@ -54,4 +54,5 @@ skip_files:
 - ^(.*/)?.*/RCS/.*
 - ^(.*/)?\..*
 - ^(.*/)?.*\.bak$
-- testlib/.*
+- devlib/.*
+- docs/.*
